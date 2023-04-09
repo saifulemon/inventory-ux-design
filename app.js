@@ -53,21 +53,56 @@ const productSchema = Mongoose.Schema({
     type: String,
     required: true,
     enum: {
-      value: ["in-stock", "out-of-stock", "discontinued"],
+      values: ["in-stock", "out-of-stock", "discontinued"],
       message: "status can't be {VALUE}"
     }
   },
   createdAt: {
     type: Date,
     default: Date.now()
-  }
+  },
+  supplier: {
+    type: Mongoose.Schema.Types.ObjectId,
+    ref: "Supplier"
+  }, 
+  categories: [{
+    name: {
+      type: String,
+      required: true
+    },
+    _id: Mongoose.Schema.Types.ObjectId
+  }]
 }, {
   timestamps: true
 })
+
+// Model creation
+const Product = Mongoose.model('Product', productSchema);
 
 app.get("/", (req, res) => {
   res.send("Route is working! YaY!");
 });
 
+
+// posting to database
+app.post("/api/vi/product", async( req,res,next) => {
+  try {
+    // save or create
+  const product = new Product(req.body);
+  const result = await product.save();
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Product saved successfully',
+    data: result  
+  })
+  } catch (error) {
+    res.status(400).json({
+      status: 'error',
+      message: 'Product saved failed',
+      error: error.message
+    })
+  }
+})
 
 module.exports = app;
